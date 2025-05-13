@@ -1,0 +1,32 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "0005-insert-second-user",
+        "author": "serve",
+        "changes": [
+          {
+            "insert": {
+              "tableName": "utenti",
+              "schemaName": "serve_core",
+              "columns": [
+                {
+                  "column": {
+                    "name": "email",
+                    "value": "giuseppe.zeno@example.com"
+                  }
+                },
+                {
+                  "column": {
+                    "name": "password",
+                    "value": "password456"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

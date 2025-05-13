@@ -1,0 +1,29 @@
+{
+  "databaseChangeLog": [
+    {
+      "include": {
+        "file": "changeset/0001-init-schema.json"
+      }
+    },
+    {
+      "include": {
+        "file": "changeset/20250513/0002-create-sequence.json"
+      }
+    },
+    {
+      "include": {
+        "file": "changeset/20250513/0003-create-table.json"
+      }
+    },
+    {
+      "include": {
+        "file": "changeset/20250513/0004-insert-first-user.json"
+      }
+    },
+    {
+      "include": {
+        "file": "changeset/20250513/0005-insert-second-user.json"
+      }
+    }
+  ]
+}

@@ -13,6 +13,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StockModule } from 'src/stock/stock.module';
 //import { MongooseModule } from '@nestjs/mongoose';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -32,6 +33,8 @@ import { StockModule } from 'src/stock/stock.module';
       }),
       inject: [ConfigService],
     }),
+
+    AuthModule,
 
     // MongooseModule.forRootAsync({
     //   imports: [ConfigModule],
