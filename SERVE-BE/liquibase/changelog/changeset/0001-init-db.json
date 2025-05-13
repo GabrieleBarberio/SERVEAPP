@@ -1,0 +1,244 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "0001-create-schema",
+        "author": "grinker",
+        "changes": [
+          {
+            "sql": {
+              "splitStatements": false,
+              "stripComments": true,
+              "sql": "CREATE SCHEMA IF NOT EXISTS serve_core;"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "0002-create-sequence",
+        "author": "grinker",
+        "changes": [
+          {
+            "createSequence": {
+              "sequenceName": "serve_core.id_utenti_seq",
+              "startValue": "1",
+              "incrementBy": "1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "0003-create-registry-role",
+        "author": "grinker",
+        "changes": [
+          {
+            "createTable": {
+              "tableName": "registry_role",
+              "schemaName": "serve_core",
+              "columns": [
+                {
+                  "column": {
+                    "name": "role_code",
+                    "type": "VARCHAR(4)",
+                    "constraints": { "primaryKey": true, "nullable": false }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "name",
+                    "type": "VARCHAR(100)",
+                    "constraints": { "nullable": false }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "description",
+                    "type": "VARCHAR(255)"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "addUniqueConstraint": {
+              "tableName": "registry_role",
+              "schemaName": "serve_core",
+              "columnNames": "name",
+              "constraintName": "uc_registry_role_name"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "0004-create-registry-func",
+        "author": "grinker",
+        "changes": [
+          {
+            "createTable": {
+              "tableName": "registry_func",
+              "schemaName": "serve_core",
+              "columns": [
+                {
+                  "column": {
+                    "name": "f_code",
+                    "type": "VARCHAR(4)",
+                    "constraints": { "primaryKey": true, "nullable": false }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "name",
+                    "type": "VARCHAR(100)",
+                    "constraints": { "nullable": false }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "description",
+                    "type": "VARCHAR(255)"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "addUniqueConstraint": {
+              "tableName": "registry_func",
+              "schemaName": "serve_core",
+              "columnNames": "name",
+              "constraintName": "uc_registry_func_name"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "0005-create-role-conf",
+        "author": "grinker",
+        "changes": [
+          {
+            "createTable": {
+              "tableName": "role_conf",
+              "schemaName": "serve_core",
+              "columns": [
+                {
+                  "column": {
+                    "name": "role_code",
+                    "type": "VARCHAR(4)",
+                    "constraints": { "nullable": false }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "f_code",
+                    "type": "VARCHAR(4)",
+                    "constraints": { "nullable": false }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "addForeignKeyConstraint": {
+              "constraintName": "fk_role_conf_role",
+              "baseTableName": "role_conf",
+              "baseColumnNames": "role_code",
+              "referencedTableName": "registry_role",
+              "baseTableSchemaName": "serve_core",
+              "referencedTableSchemaName": "serve_core",
+              "referencedColumnNames": "role_code",
+              "onDelete": "CASCADE",
+              "onUpdate": "CASCADE"
+            }
+          },
+          {
+            "addForeignKeyConstraint": {
+              "constraintName": "fk_role_conf_func",
+              "baseTableName": "role_conf",
+              "baseColumnNames": "f_code",
+              "referencedTableName": "registry_func",
+              "baseTableSchemaName": "serve_core",
+              "referencedTableSchemaName": "serve_core",
+              "referencedColumnNames": "f_code",
+              "onDelete": "CASCADE",
+              "onUpdate": "CASCADE"
+            }
+          },
+          {
+            "addUniqueConstraint": {
+              "tableName": "role_conf",
+              "schemaName": "serve_core",
+              "columnNames": "role_code,f_code",
+              "constraintName": "uc_role_conf_pair"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "0006-create-utenti",
+        "author": "grinker",
+        "changes": [
+          {
+            "createTable": {
+              "tableName": "utenti",
+              "schemaName": "serve_core",
+              "columns": [
+                {
+                  "column": {
+                    "name": "id",
+                    "type": "BIGINT",
+                    "defaultValueSequenceNext": "serve_core.id_utenti_seq",
+                    "constraints": { "primaryKey": true, "nullable": false }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "email",
+                    "type": "VARCHAR(255)",
+                    "constraints": { "nullable": false, "unique": true }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "password",
+                    "type": "VARCHAR(255)",
+                    "constraints": { "nullable": false }
+                  }
+                },
+                {
+                  "column": {
+                    "name": "role_code",
+                    "type": "VARCHAR(4)",
+                    "constraints": { "nullable": false }
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "addForeignKeyConstraint": {
+              "constraintName": "fk_utenti_role",
+              "baseTableName": "utenti",
+              "baseColumnNames": "role_code",
+              "referencedTableName": "registry_role",
+              "baseTableSchemaName": "serve_core",
+              "referencedTableSchemaName": "serve_core",
+              "referencedColumnNames": "role_code",
+              "onDelete": "RESTRICT",
+              "onUpdate": "CASCADE"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

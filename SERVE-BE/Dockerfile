@@ -16,5 +16,6 @@ COPY . .
 # Espone la porta su cui gira NestJS
 EXPOSE 3000
 
+
 # Avvia NestJS in modalità dev
 CMD ["npm", "run", "start:dev"]

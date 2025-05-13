@@ -1,0 +1,172 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "0007-insert-initial-data",
+        "author": "grinker",
+        "changes": [
+          {
+            "insert": {
+              "schemaName": "serve_core",
+              "tableName": "registry_role",
+              "columns": [
+                { "column": { "name": "role_code", "value": "HIGH" } },
+                { "column": { "name": "name", "value": "Alto" } },
+                {
+                  "column": {
+                    "name": "description",
+                    "value": "Ruolo con tutti i permessi"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "insert": {
+              "schemaName": "serve_core",
+              "tableName": "registry_role",
+              "columns": [
+                { "column": { "name": "role_code", "value": "MED" } },
+                { "column": { "name": "name", "value": "Medio" } },
+                {
+                  "column": {
+                    "name": "description",
+                    "value": "Ruolo con permessi di lettura e scrittura"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "insert": {
+              "schemaName": "serve_core",
+              "tableName": "registry_role",
+              "columns": [
+                { "column": { "name": "role_code", "value": "LOW" } },
+                { "column": { "name": "name", "value": "Basso" } },
+                {
+                  "column": {
+                    "name": "description",
+                    "value": "Ruolo con solo permessi di lettura"
+                  }
+                }
+              ]
+            }
+          },
+
+          {
+            "insert": {
+              "schemaName": "serve_core",
+              "tableName": "registry_func",
+              "columns": [
+                { "column": { "name": "f_code", "value": "READ" } },
+                { "column": { "name": "name", "value": "Lettura" } },
+                {
+                  "column": {
+                    "name": "description",
+                    "value": "Permette di leggere i dati"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "insert": {
+              "schemaName": "serve_core",
+              "tableName": "registry_func",
+              "columns": [
+                { "column": { "name": "f_code", "value": "WRIT" } },
+                { "column": { "name": "name", "value": "Scrittura" } },
+                {
+                  "column": {
+                    "name": "description",
+                    "value": "Permette di scrivere i dati"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "insert": {
+              "schemaName": "serve_core",
+              "tableName": "registry_func",
+              "columns": [
+                { "column": { "name": "f_code", "value": "MODF" } },
+                { "column": { "name": "name", "value": "Modifica" } },
+                {
+                  "column": {
+                    "name": "description",
+                    "value": "Permette di modificare i dati"
+                  }
+                }
+              ]
+            }
+          },
+
+          {
+            "insert": {
+              "schemaName": "serve_core",
+              "tableName": "role_conf",
+              "columns": [
+                { "column": { "name": "role_code", "value": "HIGH" } },
+                { "column": { "name": "f_code", "value": "READ" } }
+              ]
+            }
+          },
+          {
+            "insert": {
+              "schemaName": "serve_core",
+              "tableName": "role_conf",
+              "columns": [
+                { "column": { "name": "role_code", "value": "HIGH" } },
+                { "column": { "name": "f_code", "value": "WRIT" } }
+              ]
+            }
+          },
+          {
+            "insert": {
+              "schemaName": "serve_core",
+              "tableName": "role_conf",
+              "columns": [
+                { "column": { "name": "role_code", "value": "HIGH" } },
+                { "column": { "name": "f_code", "value": "MODF" } }
+              ]
+            }
+          },
+
+          {
+            "insert": {
+              "schemaName": "serve_core",
+              "tableName": "role_conf",
+              "columns": [
+                { "column": { "name": "role_code", "value": "MED" } },
+                { "column": { "name": "f_code", "value": "READ" } }
+              ]
+            }
+          },
+          {
+            "insert": {
+              "schemaName": "serve_core",
+              "tableName": "role_conf",
+              "columns": [
+                { "column": { "name": "role_code", "value": "MED" } },
+                { "column": { "name": "f_code", "value": "WRIT" } }
+              ]
+            }
+          },
+
+          {
+            "insert": {
+              "schemaName": "serve_core",
+              "tableName": "role_conf",
+              "columns": [
+                { "column": { "name": "role_code", "value": "LOW" } },
+                { "column": { "name": "f_code", "value": "READ" } }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
