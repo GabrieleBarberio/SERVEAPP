@@ -14,6 +14,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { StockModule } from 'src/stock/stock.module';
 //import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
+import { RolesModule } from './roles/roles.module';
 
 @Module({
   imports: [
@@ -35,6 +36,8 @@ import { AuthModule } from './auth/auth.module';
     }),
 
     AuthModule,
+
+    RolesModule,
 
     // MongooseModule.forRootAsync({
     //   imports: [ConfigModule],

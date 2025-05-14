@@ -6,45 +6,31 @@
  * Proprietary and confidential.
  */
 
+import { Role } from 'src/roles/entity/role.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-  OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
-import { StockLog } from '../../stock/entities/logs/stock-log.entity';
+import { RoleConstants } from 'src/roles/constants/RoleConstants';
 
-export type UserRole = 'ADMIN' | 'MANAGER' | 'OPERATOR';
-
-@Entity()
+@Entity('utenti', { schema: 'serve_core' })
 export class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('increment', { type: 'bigint' })
   id: number;
-
-  @Column()
-  fullName: string;
 
   @Column({ unique: true })
   email: string;
 
+  @Column({ unique: true })
+  username: string;
+
   @Column()
-  password: string; // da cifrare con bcrypt
+  password: string;
 
-  @Column({
-    type: 'enum',
-    enum: ['ADMIN', 'MANAGER', 'OPERATOR'],
-    default: 'OPERATOR',
-  })
-  role: UserRole;
-
-  @OneToMany(() => StockLog, (log) => log.user)
-  logs: StockLog[];
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @ManyToOne(() => Role)
+  @JoinColumn({ name: 'role_code' })
+  role: RoleConstants;
 }
