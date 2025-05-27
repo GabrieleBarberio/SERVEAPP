@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtModuleOptions, JwtService } from '@nestjs/jwt';
 import { TokenUtils } from './utils/token-utils';
 import { User } from 'src/user-repository/entity/user.entity';
@@ -9,6 +9,8 @@ import { UserRegisterDto } from 'src/auth/dtos/user.register.dto';
 import { UserDto } from 'src/auth/dtos/user.dto';
 import { RoleConstants } from 'src/roles/constants/RoleConstants';
 import { UserMapper } from 'src/auth/mapper/UserMapper';
+import { CustomException } from 'src/common/exception/custom-exception';
+import { CustomExceptionEnum } from 'src/common/enums/custom-exception';
 
 @Injectable()
 export class AuthService {
@@ -25,32 +27,33 @@ export class AuthService {
 
   async login(userLoginDto: UserLoginDto) {
     try {
-      const user = await this.userRepository.findOne({
+      const user: User | null = await this.userRepository.findOne({
         where: { email: userLoginDto.email },
       });
 
       if (!user) {
-        throw new UnauthorizedException('Email o password non validi');
+        throw new CustomException(CustomExceptionEnum.USER_NOT_FOUND);
       }
 
-      const passwordMatch = await bcrypt.compare(
+      const passwordMatch: boolean = await bcrypt.compare(
         userLoginDto.password,
         user.password,
       );
 
       if (!passwordMatch) {
-        throw new UnauthorizedException('login non validi');
+        throw new CustomException(CustomExceptionEnum.INVALID_CREDENTIALS);
       }
 
       return this.generateJwt(user);
     } catch (error) {
       console.error(error);
+      throw new CustomException(CustomExceptionEnum.GENERIC_ERROR);
     }
   }
 
   async registerUser(userRegisterDto: UserRegisterDto): Promise<UserDto> {
     try {
-      const existingUser = await this.userRepository.findOne({
+      const existingUser: User | null = await this.userRepository.findOne({
         where: [
           { email: userRegisterDto.email },
           { username: userRegisterDto.username },
@@ -58,9 +61,7 @@ export class AuthService {
       });
 
       if (existingUser) {
-        throw new ConflictException(
-          "Impossibile registrare l'utente: email o username già esistenti",
-        );
+        throw new CustomException(CustomExceptionEnum.USER_ALREADY_EXISTS);
       }
 
       const hashedPassword: string = await bcrypt.hash(
@@ -75,20 +76,22 @@ export class AuthService {
       const savedUser: User = await this.userRepository.save(userToSave);
       return this.userMapper.mapToDto(savedUser);
     } catch (error) {
+      if (error instanceof CustomException) throw error;
       console.error(error);
-      throw error;
+      throw new CustomException(CustomExceptionEnum.GENERIC_ERROR, [error]);
     }
   }
 
   validateToken(authHeader?: string) {
     const token = TokenUtils.extractToken(authHeader);
-    if (!token) throw new UnauthorizedException('Token mancante');
+    if (!token) throw new CustomException(CustomExceptionEnum.TOKEN_MISSING);
     try {
       return this.tokenUtils.verifyToken(token);
     } catch {
-      throw new UnauthorizedException('Token non valido');
+      throw new CustomException(CustomExceptionEnum.INVALID_TOKEN);
     }
   }
+
   generateJwt(user: User): { access_token: string } {
     const payload = {
       sub: user.id,

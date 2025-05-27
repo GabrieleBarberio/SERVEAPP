@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpException } from '@nestjs/common';
 import { CustomExceptionEnum } from '../enums/custom-exception';
 import {
   CustomExceptionMessages,
@@ -9,17 +9,29 @@ import { editExceptionMessage } from 'src/common/exception/exception-utils';
 
 export class CustomException extends HttpException {
   override readonly message: string;
-  constructor(code: CustomExceptionEnum, object: string[] | null) {
-    const status =
-      CustomExceptionStatus[code] ?? HttpStatus.INTERNAL_SERVER_ERROR;
-    const message = editExceptionMessage(object, CustomExceptionMessages[code]);
+  readonly code: CustomExceptionEnum;
+  constructor(code: CustomExceptionEnum, object?: string[]) {
     super(
       {
         code,
-        message: `[${code}] ${message}`,
+        message: `[${code}] ${editExceptionMessage(object, CustomExceptionMessages[code])}`,
       },
-      status,
+      CustomExceptionStatus[code],
     );
+    const message = editExceptionMessage(object, CustomExceptionMessages[code]);
+    this.code = code;
     this.message = message;
+  }
+  getStatus(): number {
+    return super.getStatus();
+  }
+  getResponse(): string | object {
+    return super.getResponse();
+  }
+  getCode(): CustomExceptionEnum {
+    return this.code;
+  }
+  getMessage(): string {
+    return this.message;
   }
 }

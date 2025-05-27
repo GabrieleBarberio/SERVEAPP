@@ -3,10 +3,11 @@ import { Repository } from 'typeorm';
 import { User } from 'src/user-repository/entity/user.entity';
 import { CustomException } from 'src/common/exception/custom-exception';
 import { CustomExceptionEnum } from 'src/common/enums/custom-exception';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UserRepositoryService {
-  constructor(private userRepository: Repository<User>) {}
+  constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
 
   async getById(id: number): Promise<User> {
     try {
@@ -82,7 +83,7 @@ export class UserRepositoryService {
         ],
       });
       if (data) {
-        new CustomException(CustomExceptionEnum.USER_ALREADY_EXISTS, null);
+        throw new CustomException(CustomExceptionEnum.USER_ALREADY_EXISTS, null);
       }
       user = this.userRepository.create(user);
       return await this.userRepository.save(user);

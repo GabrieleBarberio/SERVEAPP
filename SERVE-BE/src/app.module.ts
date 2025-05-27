@@ -12,7 +12,7 @@ import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StockModule } from 'src/stock/stock.module';
-//import { MongooseModule } from '@nestjs/mongoose';
+
 import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './roles/roles.module';
 import { UserRepositoryModule } from './user-repository/user-repository.module';
@@ -23,7 +23,7 @@ import { UserRepositoryService } from './user-repository/user-repository.service
     ConfigModule.forRoot({ isGlobal: true }),
 
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule, StockModule],
+      imports: [ConfigModule, StockModule, AuthModule],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
         host: config.get('POSTGRES_HOST'),

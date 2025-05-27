@@ -1,7 +1,10 @@
 export const editExceptionMessage: (
-  object: string[] | null,
+  object: string[] | null | undefined,
   message: string,
-) => string = (object: string[], message: string): string => {
+) => string = (
+  object: string[] | null | undefined,
+  message: string,
+): string => {
   if (object && Array.isArray(object)) {
     for (const m of object) {
       if (message.includes('${}')) {
