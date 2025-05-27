@@ -11,7 +11,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { StockService } from '../stock/stock.service';
 import { Product } from '../products/entity/product.entity';
-import { UpdateProductQuantityDto } from '../stock/entities/dtos/stock.dto';
+import { UpdateProductQuantityDto } from '../stock/entity/dtos/stock.dto';
 import { User } from 'src/user-repository/entity/user.entity';
 import { NotFoundException } from '@nestjs/common';
 

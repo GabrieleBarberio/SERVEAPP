@@ -31,16 +31,15 @@ import { UserRepositoryService } from './user-repository/user-repository.service
         username: config.get('POSTGRES_USER'),
         password: config.get('POSTGRES_PASSWORD'),
         database: config.get('POSTGRES_DB'),
-        autoLoadEntities: true,
-        synchronize: true,
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: false,
       }),
-      inject: [ConfigService],
+
     }),
     AuthModule,
-    RolesModule,
     UserRepositoryModule,
   ],
   controllers: [AppController],
-  providers: [AppService, UserRepositoryService],
+  providers: [AppService],
 })
 export class AppModule {}

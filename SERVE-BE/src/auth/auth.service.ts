@@ -11,6 +11,7 @@ import { RoleConstants } from 'src/roles/constants/RoleConstants';
 import { UserMapper } from 'src/auth/mapper/UserMapper';
 import { CustomException } from 'src/common/exception/custom-exception';
 import { CustomExceptionEnum } from 'src/common/enums/custom-exception';
+import { UserRepositoryService } from 'src/user-repository/user-repository.service';
 
 @Injectable()
 export class AuthService {
@@ -18,8 +19,8 @@ export class AuthService {
 
   constructor(
     private readonly jwtService: JwtService,
-    private userRepository: Repository<User>,
-    private userMapper: UserMapper,
+    private readonly userRepository: UserRepositoryService,
+    private readonly userMapper: UserMapper,
   ) {
     const cfg = jwtService['options'] as JwtModuleOptions;
     this.tokenUtils = new TokenUtils(cfg.secret as string, cfg.signOptions);
@@ -27,9 +28,9 @@ export class AuthService {
 
   async login(userLoginDto: UserLoginDto) {
     try {
-      const user: User | null = await this.userRepository.findOne({
-        where: { email: userLoginDto.email },
-      });
+      const user: User | null = await this.userRepository.getByEmail(
+        userLoginDto.email,
+      );
 
       if (!user) {
         throw new CustomException(CustomExceptionEnum.USER_NOT_FOUND);
@@ -53,12 +54,11 @@ export class AuthService {
 
   async registerUser(userRegisterDto: UserRegisterDto): Promise<UserDto> {
     try {
-      const existingUser: User | null = await this.userRepository.findOne({
-        where: [
-          { email: userRegisterDto.email },
-          { username: userRegisterDto.username },
-        ],
-      });
+      const existingUser: User | null =
+        await this.userRepository.getByUsernameEmail(
+          userRegisterDto.username,
+          userRegisterDto.email,
+        );
 
       if (existingUser) {
         throw new CustomException(CustomExceptionEnum.USER_ALREADY_EXISTS);
@@ -73,7 +73,7 @@ export class AuthService {
       userToSave.password = hashedPassword;
       userToSave.role = RoleConstants.HIGH;
 
-      const savedUser: User = await this.userRepository.save(userToSave);
+      const savedUser: User = await this.userRepository.create(userToSave);
       return this.userMapper.mapToDto(savedUser);
     } catch (error) {
       if (error instanceof CustomException) throw error;

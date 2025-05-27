@@ -1,20 +1,21 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { JwtModule, JwtService } from '@nestjs/jwt';
-import { UserMapper } from 'src/auth/mapper/UserMapper';
+import { User } from '../user-repository/entity/user.entity';
+import { UserMapper } from '../auth/mapper/UserMapper';
 import { UserRepositoryModule } from 'src/user-repository/user-repository.module';
 
 @Module({
   imports: [
-    JwtModule.register({
-      secret: 'secret_da_aggiornare_per_ora',
-      signOptions: { expiresIn: '1d' },
-    }),
+    TypeOrmModule.forFeature([User]),
     UserRepositoryModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '1h' },
+    }),
   ],
-  providers: [AuthService, UserMapper, JwtService],
-  controllers: [AuthController],
+  providers: [AuthService, UserMapper],
   exports: [AuthService],
 })
 export class AuthModule {}

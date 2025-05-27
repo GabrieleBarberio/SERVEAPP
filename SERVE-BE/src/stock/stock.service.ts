@@ -8,21 +8,20 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/user-repository/entity/user.entity';
 import { Repository } from 'typeorm';
 import { Product } from 'src/products/entity/product.entity';
 import {
   CreateProductDto,
   UpdateProductQuantityDto,
-} from './entities/dtos/stock.dto';
+} from './entity/dtos/stock.dto';
+import { UserRepositoryService } from 'src/user-repository/user-repository.service';
 
 @Injectable()
 export class StockService {
   constructor(
     @InjectRepository(Product)
     private productRepo: Repository<Product>,
-    @InjectRepository(User)
-    private userRepo: Repository<User>,
+    private userRepo: UserRepositoryService,
   ) {}
 
   async createProduct(dto: CreateProductDto) {
@@ -45,7 +44,7 @@ export class StockService {
 
     await this.productRepo.save(product);
 
-    const user = await this.userRepo.findOne({ where: { id: dto.userId } });
+    const user = await this.userRepo.getById(dto.userId);
     if (!user) {
       throw new NotFoundException('User not found');
     }

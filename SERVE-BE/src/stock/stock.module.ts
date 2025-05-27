@@ -12,10 +12,16 @@ import { Product } from '../products/entity/product.entity';
 import { StockService } from './stock.service';
 import { StockController } from './stock.controller';
 import { AuthModule } from 'src/auth/auth.module';
+import { UserRepositoryModule } from 'src/user-repository/user-repository.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product]), AuthModule],
+  imports: [
+    TypeOrmModule.forFeature([Product]),
+    AuthModule,
+    UserRepositoryModule,
+  ],
   controllers: [StockController],
-  providers: [StockService, AuthModule],
+  providers: [StockService],  // Rimosso AuthModule da qui
+  exports: [StockService],
 })
 export class StockModule {}
