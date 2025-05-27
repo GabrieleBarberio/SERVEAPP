@@ -11,9 +11,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { StockService } from '../stock/stock.service';
 import { Product } from '../products/entity/product.entity';
-import { StockLog } from '../stock/entities/logs/stock-log.entity';
 import { UpdateProductQuantityDto } from '../stock/entities/dtos/stock.dto';
-import { User } from '../users/entity/user.entity';
+import { User } from 'src/user-repository/entity/user.entity';
 import { NotFoundException } from '@nestjs/common';
 
 export type MockType<T> = {
@@ -31,7 +30,6 @@ export const repositoryMockFactory: () => MockType<Repository<any>> = () => ({
 describe('StockService', () => {
   let service: StockService;
   let productRepo: MockType<Repository<Product>>;
-  let logRepo: MockType<Repository<StockLog>>;
   let userRepo: MockType<Repository<User>>;
 
   beforeEach(async () => {
@@ -43,10 +41,6 @@ describe('StockService', () => {
           useFactory: repositoryMockFactory,
         },
         {
-          provide: getRepositoryToken(StockLog),
-          useFactory: repositoryMockFactory,
-        },
-        {
           provide: getRepositoryToken(User),
           useFactory: repositoryMockFactory,
         },
@@ -55,7 +49,6 @@ describe('StockService', () => {
 
     service = module.get<StockService>(StockService);
     productRepo = module.get(getRepositoryToken(Product));
-    logRepo = module.get(getRepositoryToken(StockLog));
     userRepo = module.get(getRepositoryToken(User));
   });
 
@@ -96,21 +89,10 @@ describe('StockService', () => {
 
       (userRepo.findOne as jest.Mock).mockResolvedValue(user);
 
-      (logRepo.create as jest.Mock).mockReturnValue({} as StockLog);
-      (logRepo.save as jest.Mock).mockResolvedValue({} as StockLog);
-
       const result = await service.updateProductQuantity(dto);
 
       expect(productRepo.findOneBy).toHaveBeenCalledWith({ id: dto.productId });
       expect(productRepo.save).toHaveBeenCalledWith(updated);
-      expect(logRepo.create).toHaveBeenCalledWith({
-        product,
-        quantity: dto.quantity,
-        movementType: dto.movementType,
-        user: user,
-        note: dto.note,
-      });
-      expect(logRepo.save).toHaveBeenCalled();
       expect(result).toEqual(updated);
     });
 
@@ -126,29 +108,15 @@ describe('StockService', () => {
       };
       const user = new User();
       user.id = 3;
-      user.fullName = 'Giovanni Rossi';
       user.email = 'giovanni.rossi@example.com';
       user.password = 'hashedpassword';
-      user.role = 'OPERATOR';
-      user.logs = [];
-      user.createdAt = new Date('2023-01-01T12:00:00');
-      user.updatedAt = new Date('2023-01-01T12:00:00');
 
       (productRepo.findOneBy as jest.Mock).mockResolvedValue(product);
       (userRepo.findOne as jest.Mock).mockResolvedValue(user);
       (productRepo.save as jest.Mock).mockResolvedValue(updated);
-      (logRepo.create as jest.Mock).mockReturnValue({} as StockLog);
-      (logRepo.save as jest.Mock).mockResolvedValue({} as StockLog);
 
       const result = await service.updateProductQuantity(dto);
       expect(productRepo.save).toHaveBeenCalledWith(updated);
-      expect(logRepo.create).toHaveBeenCalledWith({
-        product,
-        quantity: dto.quantity,
-        movementType: dto.movementType,
-        user,
-        note: dto.note,
-      });
       expect(result).toEqual(updated);
     });
   });

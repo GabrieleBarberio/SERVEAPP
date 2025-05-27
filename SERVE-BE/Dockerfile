@@ -1,5 +1,5 @@
 # Usa un'immagine Node ufficiale
-FROM node:18-alpine
+FROM node:20-slim
 
 # Imposta la directory di lavoro
 WORKDIR /app

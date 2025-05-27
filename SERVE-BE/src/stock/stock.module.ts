@@ -9,14 +9,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from '../products/entity/product.entity';
-import { StockLog } from './entities/logs/stock-log.entity';
 import { StockService } from './stock.service';
 import { StockController } from './stock.controller';
-import { UserModule } from 'src/users/user.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product, StockLog]), UserModule],
+  imports: [TypeOrmModule.forFeature([Product]), AuthModule],
   controllers: [StockController],
-  providers: [StockService],
+  providers: [StockService, AuthModule],
 })
 export class StockModule {}

@@ -15,6 +15,8 @@ import { StockModule } from 'src/stock/stock.module';
 //import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { RolesModule } from './roles/roles.module';
+import { UserRepositoryModule } from './user-repository/user-repository.module';
+import { UserRepositoryService } from './user-repository/user-repository.service';
 
 @Module({
   imports: [
@@ -34,20 +36,11 @@ import { RolesModule } from './roles/roles.module';
       }),
       inject: [ConfigService],
     }),
-
     AuthModule,
-
     RolesModule,
-
-    // MongooseModule.forRootAsync({
-    //   imports: [ConfigModule],
-    //   useFactory: (config: ConfigService) => ({
-    //     uri: config.get<string>('MONGO_URI'),
-    //   }),
-    //   inject: [ConfigService],
-    // }),
+    UserRepositoryModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, UserRepositoryService],
 })
 export class AppModule {}

@@ -24,23 +24,23 @@ services:
     command: >
       --defaultsFile=/liquibase/liquibase.properties update
 
-#  backend:
-#    build: .
-#    container_name: serve_backend
-#    restart: always
-#    depends_on:
-#      - db
-#    environment:
-#      DATABASE_HOST: db
-#      DATABASE_PORT: 5432
-#      DATABASE_USER: serveuser
-#      DATABASE_PASSWORD: servepass
-#      DATABASE_NAME: servedb
-#    ports:
-#      - "3000:3000"
-#    volumes:
-#      - .:/app
-#    command: npm run start:dev
+  backend:
+    build: .
+    container_name: serve_backend
+    restart: always
+    depends_on:
+      - db
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USER: serveuser
+      DATABASE_PASSWORD: servepass
+      DATABASE_NAME: servedb
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+    command: npm run start:dev
 
 volumes:
   postgres_data:

@@ -164,6 +164,18 @@
                 { "column": { "name": "f_code", "value": "READ" } }
               ]
             }
+          },
+          {
+            "insert": {
+              "schemaName": "serve_core",
+              "tableName": "utenti",
+              "columns": [
+                { "column": { "name": "email", "value": "utente@example.com" } },
+                { "column": { "name": "password", "value": "password123" } },
+                { "column": { "name": "username", "value": "utente" } },
+                { "column": { "name": "role_code", "value": "HIGH" } }
+              ]
+            }
           }
         ]
       }
