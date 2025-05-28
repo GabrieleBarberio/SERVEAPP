@@ -1,0 +1,173 @@
+name: Track Epic Progress
+
+on:
+  issues:
+    types: [closed, reopened]
+  pull_request:
+    types: [closed]
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  update-epic-progress:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'epic-') || (github.event.pull_request && contains(github.event.pull_request.body, 'epic-'))
+
+    steps:
+      - name: Update Epic Progress
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let epicNumber = null;
+            let issueNumber = null;
+            let issueTitle = '';
+            let isClosing = false;
+            
+            // Extract epic number from labels or PR body
+            if (context.eventName === 'issues') {
+              const labels = context.payload.issue.labels;
+              const epicLabel = labels.find(label => label.name.startsWith('epic-'));
+            
+              if (epicLabel) {
+                epicNumber = parseInt(epicLabel.name.replace('epic-', ''));
+                issueNumber = context.payload.issue.number;
+                issueTitle = context.payload.issue.title;
+                isClosing = context.payload.action === 'closed';
+              }
+            } else if (context.eventName === 'pull_request' && context.payload.pull_request.merged) {
+              // Extract from PR body if it mentions epic
+              const prBody = context.payload.pull_request.body || '';
+              const epicMatch = prBody.match(/epic[#-](\d+)/i);
+            
+              if (epicMatch) {
+                epicNumber = parseInt(epicMatch[1]);
+                issueNumber = context.payload.pull_request.number;
+                issueTitle = context.payload.pull_request.title;
+                isClosing = true; // PR merged means issue is likely done
+              }
+            }
+            
+            if (!epicNumber) {
+              console.log('No epic number found, skipping...');
+              return;
+            }
+            
+            console.log(`Updating Epic #${epicNumber} progress for issue #${issueNumber}`);
+            
+            try {
+              // Get the epic issue
+              const epic = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: epicNumber
+              });
+            
+              const epicBody = epic.data.body || '';
+            
+              // Get all issues with the epic label
+              const epicIssues = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: `epic-${epicNumber}`,
+                state: 'all',
+                per_page: 100
+              });
+            
+              const totalIssues = epicIssues.data.length;
+              const closedIssues = epicIssues.data.filter(issue => issue.state === 'closed').length;
+              const openIssues = totalIssues - closedIssues;
+              const progressPercent = totalIssues > 0 ? Math.round((closedIssues / totalIssues) * 100) : 0;
+            
+              // Create progress bar
+              const progressBarLength = 20;
+              const filledBars = Math.round((progressPercent / 100) * progressBarLength);
+              const emptyBars = progressBarLength - filledBars;
+              const progressBar = '█'.repeat(filledBars) + '░'.repeat(emptyBars);
+            
+              // Update progress section in epic body
+              const progressSection = `## 📊 Progresso Epic
+
+### 📈 Stato Generale
+  \`\`\`
+  ${progressBar} ${progressPercent}%
+  \`\`\`
+
+**Completamento**: ${closedIssues}/${totalIssues} issue completate
+  **Issue Aperte**: ${openIssues}
+  **Issue Chiuse**: ${closedIssues}
+
+### 📋 Dettagli Issue
+  ${epicIssues.data.map(issue => {
+const status = issue.state === 'closed' ? '✅' : '🔄';
+  const issueType = issue.title.match(/^\[(FEAT|BUG|TASK|ENH)\]/)?.[1] || 'ISSUE';
+  return `- ${status} #${issue.number} **[${issueType}]** ${issue.title.replace(/^\[(FEAT|BUG|TASK|ENH)\] /, '')}`;
+}).join('\n')}
+  
+  **Ultimo aggiornamento**: ${new Date().toLocaleString('it-IT')}
+
+---
+*Tracciamento automatico Epic #${epicNumber}*`;
+  
+  // Replace existing progress section or add new one
+  let updatedBody;
+  if (epicBody.includes('## 📊 Progresso Epic')) {
+  updatedBody = epicBody.replace(
+  /## 📊 Progresso Epic[\s\S]*?(?=---\n\*Tracciamento automatico Epic|$)/,
+  progressSection + '\n\n'
+  );
+  } else {
+  updatedBody = epicBody + '\n\n' + progressSection;
+  }
+  
+  // Update epic
+  await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: epicNumber,
+              body: updatedBody
+});
+  
+  // Add comment about the update
+              const action = isClosing ? 'completata' : 'riaperta';
+              const emoji = isClosing ? '🎉' : '🔄';
+
+  await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: epicNumber,
+              body: `${emoji} **Progresso Epic Aggiornato**
+
+  Issue #${issueNumber} "${issueTitle.replace(/^\[(FEAT|BUG|TASK|ENH)\] /, '')}" è stata **${action}**!
+
+  **Progresso attuale**: ${closedIssues}/${totalIssues} (${progressPercent}%)
+
+              ${progressPercent === 100 ? '🎊 **EPIC COMPLETATA!** Tutte le issue sono state chiuse! 🎊' :
+                `Ancora ${openIssues} issue da completare per finire questa Epic.`}`
+                });
+                
+                // If epic is completed, add special handling
+                if (progressPercent === 100) {
+                // Add completed label and close epic if wanted
+                await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: epicNumber,
+                labels: ['completed']
+              });
+
+                // Optional: Close the epic automatically
+                // await github.rest.issues.update({
+                //   owner: context.repo.owner,
+                //   repo: context.repo.repo,
+                //   issue_number: epicNumber,
+                //   state: 'closed'
+                // });
+              }
+
+                console.log(`✅ Epic #${epicNumber} progress updated: ${closedIssues}/${totalIssues} (${progressPercent}%)`);
+
+              } catch (error) {
+                console.error(`❌ Error updating epic progress: ${error.message}`);
+              }

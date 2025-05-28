@@ -1,0 +1,258 @@
+name: Create Issues from Epic
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  create-epic-issues:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'epic')
+
+    steps:
+      - name: Parse Epic and Create Issues
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const epicNumber = context.payload.issue.number;
+            const epicTitle = context.payload.issue.title;
+            const epicBody = context.payload.issue.body || '';
+            const epicUrl = context.payload.issue.html_url;
+            
+            console.log(`Processing Epic #${epicNumber}: ${epicTitle}`);
+            
+            // Extract issues list from the epic body
+            const issuesSection = epicBody.match(/### 📋 Lista Issue da Creare[\s\S]*?(?=###|$)/);
+            if (!issuesSection) {
+              console.log('No issues section found in epic');
+              return;
+            }
+            
+            const issuesText = issuesSection[0];
+            
+            // Parse individual issues using regex
+            const issueRegex = /- \*\*\[(FEAT|BUG|TASK|ENH)\] ([^*]+)\*\* - ([^(\n]+)(\(([^)]+)\))?/g;
+            const issues = [];
+            let match;
+            
+            while ((match = issueRegex.exec(issuesText)) !== null) {
+              const [, type, title, description, , component] = match;
+              issues.push({
+                type: type.trim(),
+                title: title.trim(),
+                description: description.trim(),
+                component: component ? component.trim() : ''
+              });
+            }
+            
+            console.log(`Found ${issues.length} issues to create`);
+            
+            if (issues.length === 0) {
+              // Add comment explaining the format
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: epicNumber,
+                body: `🤖 **Epic Issue Creator**
+
+Attenzione: Non ho trovato issue da creare. Assicurati di usare il formato corretto nella sezione "📋 Lista Issue da Creare":
+
+  \`\`\`
+- **[FEAT] Nome issue** - Breve descrizione (Frontend)
+- **[TASK] Altro task** - Altra descrizione (Backend)
+  \`\`\`
+  
+  Dopo aver aggiornato la Epic, le issue verranno create automaticamente! 🚀`
+  });
+  return;
+  }
+  
+  const createdIssues = [];
+  const failedIssues = [];
+  
+  // Create each issue
+  for (const issueData of issues) {
+  try {
+  // Determine labels based on type and component
+  const labels = [issueData.type.toLowerCase()];
+  
+  if (issueData.component.toLowerCase().includes('frontend') ||
+  issueData.component.toLowerCase().includes('fe')) {
+  labels.push('frontend');
+  }
+  if (issueData.component.toLowerCase().includes('backend') ||
+  issueData.component.toLowerCase().includes('be')) {
+  labels.push('backend');
+  }
+  if (issueData.component.toLowerCase().includes('database') ||
+  issueData.component.toLowerCase().includes('db')) {
+  labels.push('database');
+  }
+  if (issueData.component.toLowerCase().includes('test')) {
+  labels.push('testing');
+  }
+  
+  // Add epic-related label
+  labels.push(`epic-${epicNumber}`);
+  
+  const issueTitle = `[${issueData.type}] ${issueData.title}`;
+  
+  const issueBody = `## 📋 Issue generata da Epic #${epicNumber}
+  
+  **Epic Parent**: [${epicTitle}](${epicUrl})
+**Componente**: ${issueData.component || 'Non specificato'}
+
+## 📝 Descrizione
+  ${issueData.description}
+  
+  ## 🎯 Context dalla Epic
+  Questa issue fa parte della Epic "${epicTitle.replace('[EPIC] ', '')}" e contribuisce al completamento dell'obiettivo generale.
+
+## ✅ Definition of Done
+- [ ] Implementazione completata
+- [ ] Test scritti e passanti
+- [ ] Code review approvata
+- [ ] Documentazione aggiornata (se necessario)
+- [ ] Issue collegata alla Epic aggiornata
+
+## 🔗 Issue Correlate
+  Parte della Epic #${epicNumber}
+
+---
+*Issue creata automaticamente dalla Epic #${epicNumber}*`;
+  
+  const createdIssue = await github.rest.issues.create({
+           owner: context.repo.owner,
+           repo: context.repo.repo,
+           title: issueTitle,
+           body: issueBody,
+           labels: labels
+});
+  
+  createdIssues.push({
+           number: createdIssue.data.number,
+           title: issueTitle,
+           url: createdIssue.data.html_url
+});
+  
+  console.log(`✅ Created issue #${createdIssue.data.number}: ${issueTitle}`);
+  
+  // Small delay to avoid rate limiting
+  await new Promise(resolve => setTimeout(resolve, 500));
+
+} catch (error) {
+           console.error(`❌ Failed to create issue: ${issueData.title}`, error);
+           failedIssues.push(`${issueData.title}: ${error.message}`);
+}
+}
+
+  // Update the Epic with created issues
+  if (createdIssues.length > 0) {
+  const issuesList = createdIssues.map(issue =>
+  `- [x] #${issue.number} - ${issue.title.replace(/^\[(FEAT|BUG|TASK|ENH)\] /, '')}`
+  ).join('\n');
+  
+  const progressSection = `
+  
+  ## 📊 Progresso Epic
+  
+  ### ✅ Issue Create (${createdIssues.length}/${issues.length})
+  ${issuesList}
+  
+  ${failedIssues.length > 0 ? `### ❌ Issue Non Create (${failedIssues.length})
+           ${failedIssues.map(f => `- ${f}`).join('\n')}` : ''}
+
+  **Ultimo aggiornamento**: ${new Date().toLocaleString('it-IT')}
+
+---
+*Tracciamento automatico Epic #${epicNumber}*`;
+  
+  // Add progress section to epic
+  const updatedBody = epicBody + progressSection;
+  
+  await github.rest.issues.update({
+owner: context.repo.owner,
+repo: context.repo.repo,
+issue_number: epicNumber,
+body: updatedBody
+});
+}
+
+  // Add summary comment
+  const summaryComment = `🎉 **Epic Issue Creator - Completato!**
+
+✅ **Issue create**: ${createdIssues.length}
+${failedIssues.length > 0 ? `❌ **Issue fallite**: ${failedIssues.length}` : ''}
+
+  ### 📋 Issue Create:
+  ${createdIssues.map(issue => `- #${issue.number} - [${issue.title}](${issue.url})`).join('\n')}
+  
+  ${failedIssues.length > 0 ? `
+  ### ⚠️ Issue Non Create:
+  ${failedIssues.map(f => `- ${f}`).join('\n')}
+
+Controlla i log per dettagli sugli errori.` : ''}
+
+  Tutte le issue sono state etichettate con \`epic-${epicNumber}\` per facilitare il tracking! 🏷️
+  
+  **Prossimi passi:**
+  1. Rivedi le issue create
+  2. Assegna le issue ai developer
+  3. Definisci le priorità e le milestone
+  4. Inizia lo sviluppo! 🚀`;
+  
+  await github.rest.issues.createComment({
+owner: context.repo.owner,
+repo: context.repo.repo,
+issue_number: epicNumber,
+body: summaryComment
+});
+  
+  console.log(`🎉 Epic processing completed! Created ${createdIssues.length} issues`);
+
+- name: Create Epic Milestone
+  uses: actions/github-script@v7
+  with:
+    script: |
+      const epicNumber = context.payload.issue.number;
+      const epicTitle = context.payload.issue.title.replace('[EPIC] ', '');
+      
+      try {
+        // Check if milestone already exists
+        const milestones = await github.rest.issues.listMilestones({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          state: 'open'
+        });
+      
+        const existingMilestone = milestones.data.find(m => 
+          m.title.includes(`Epic ${epicNumber}`) || m.title.includes(epicTitle)
+        );
+      
+        if (!existingMilestone) {
+          // Create milestone for the epic
+          const milestone = await github.rest.issues.createMilestone({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `Epic ${epicNumber}: ${epicTitle}`,
+            description: `Milestone per Epic #${epicNumber} - ${epicTitle}`,
+            state: 'open'
+          });
+      
+          console.log(`✅ Created milestone: ${milestone.data.title}`);
+      
+          // Add comment about milestone
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: epicNumber,
+            body: `🎯 **Milestone Creata**\n\nHo creato la milestone "${milestone.data.title}" per tracciare il progresso di questa Epic.\n\nTutte le issue di questa Epic possono essere associate a questa milestone per un migliore tracking! 📊`
+          });
+        }
+      } catch (error) {
+        console.log(`⚠️ Could not create milestone: ${error.message}`);
+      }
