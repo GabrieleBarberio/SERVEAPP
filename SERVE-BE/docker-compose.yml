@@ -31,11 +31,11 @@ services:
     depends_on:
       - db
     environment:
-      DATABASE_HOST: db
-      DATABASE_PORT: 5432
-      DATABASE_USER: serveuser
-      DATABASE_PASSWORD: servepass
-      DATABASE_NAME: servedb
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: serveuser
+      DB_PASSWORD: servepass
+      DB_NAME: servedb
     ports:
       - "3000:3000"
     volumes:

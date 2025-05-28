@@ -11,7 +11,7 @@ import { StockService } from './stock.service';
 import {
   CreateProductDto,
   UpdateProductQuantityDto,
-} from './entities/dtos/stock.dto';
+} from './entity/dtos/stock.dto';
 
 @Controller('stock')
 export class StockController {
