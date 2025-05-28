@@ -1,6 +1,6 @@
 import { JwtService, JwtSignOptions, JwtVerifyOptions } from '@nestjs/jwt';
-import { CustomDecorator, SetMetadata } from '@nestjs/common';
-import { JwtPayload} from 'src/auth/models/JwtPayload';
+import { SetMetadata } from '@nestjs/common';
+import { JwtPayload } from 'src/auth/models/JwtPayload';
 
 export class TokenUtils {
   private jwtService: JwtService;

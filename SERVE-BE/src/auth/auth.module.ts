@@ -1,18 +1,28 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { JwtModule, JwtService } from '@nestjs/jwt';
-import { UserMapper } from 'src/auth/mapper/UserMapper';
+import { User } from '../user-repository/entity/user.entity';
+import { UserMapper } from '../auth/mapper/UserMapper';
+import { UserRepositoryModule } from 'src/user-repository/user-repository.module';
+import { AuthController } from 'src/auth/auth.controller';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
+  controllers: [AuthController],
   imports: [
-    JwtModule.register({
-      secret: 'secret_da_aggiornare_per_ora',
-      signOptions: { expiresIn: '1d' },
+    TypeOrmModule.forFeature([User]),
+    UserRepositoryModule,
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+        signOptions: { expiresIn: '1h' },
+      }),
     }),
   ],
-  providers: [AuthService, UserMapper, JwtService],
-  controllers: [AuthController],
+  providers: [AuthService, UserMapper],
+  exports: [AuthService],
 })
 export class AuthModule {}
-//TODO una user repository (modulo) injectable da fare inject in auth e da usare per auth service
