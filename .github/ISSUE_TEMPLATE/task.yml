@@ -1,0 +1,94 @@
+name: 📋 Task
+description: Task tecnico o refactoring
+title: "[TASK] "
+labels: ["task"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 📋 Task
+        Descrivi il task tecnico, refactoring o attività di manutenzione.
+        
+        ### 📝 Convenzioni per il titolo
+        - **Task generico**: `[TASK] Descrizione del task`
+        - **Refactoring**: `[REFACTOR] Componente da refactorizzare`
+        - **Setup**: `[SETUP] Configurazione/installazione`
+        - **Documentation**: `[DOCS] Documentazione da creare/aggiornare`
+
+  - type: dropdown
+    id: task-type
+    attributes:
+      label: 🏷️ Tipo di Task
+      description: Che tipo di task è?
+      options:
+        - "🔧 Refactoring - Miglioramento del codice esistente"
+        - "⚙️ Setup - Configurazione ambiente/tools"
+        - "📚 Documentation - Documentazione"
+        - "🧪 Testing - Aggiunta/miglioramento test"
+        - "🚀 Deploy - Configurazione deployment"
+        - "🔒 Security - Task di sicurezza"
+        - "⚡ Performance - Ottimizzazioni"
+        - "🧹 Cleanup - Pulizia codice/files"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Descrizione
+      description: Descrivi il task da completare
+      placeholder: "Questo task prevede di..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: checklist
+    attributes:
+      label: ✅ Checklist
+      description: Elenca tutti i sottotask da completare
+      placeholder: |
+        - [ ] Analizzare il codice esistente
+        - [ ] Creare i nuovi file/componenti
+        - [ ] Aggiornare la documentazione
+        - [ ] Scrivere/aggiornare i test
+        - [ ] Testare le modifiche
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 📦 Componente
+      description: Quale parte dell'app coinvolge?
+      options:
+        - "🎨 Frontend"
+        - "⚙️ Backend"
+        - "🗄️ Database"
+        - "🔧 DevOps/CI-CD"
+        - "📚 Documentation"
+        - "🧪 Testing"
+        - "🌐 Generale"
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-notes
+    attributes:
+      label: 🔬 Note Tecniche
+      description: Dettagli tecnici, architettura, considerazioni
+      placeholder: "Considerazioni tecniche, pattern da usare, dipendenze..."
+
+  - type: dropdown
+    id: estimated-effort
+    attributes:
+      label: ⏱️ Stima Effort
+      description: Quanto tempo pensi serva?
+      options:
+        - "🟢 XS - 1-2 ore"
+        - "🟡 S - Mezza giornata"
+        - "🟠 M - 1-2 giorni"
+        - "🔴 L - 3-5 giorni"
+        - "🟣 XL - 1+ settimana"
+    validations:
+      required: truec

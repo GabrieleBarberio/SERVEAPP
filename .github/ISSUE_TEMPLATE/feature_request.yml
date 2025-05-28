@@ -1,0 +1,105 @@
+name: ✨ Feature Request
+description: Proponi una nuova funzionalità
+title: "[FEAT] "
+labels: ["enhancement", "needs-review"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## ✨ Feature Request
+        Grazie per la tua proposta! Descrivi la nuova funzionalità che vorresti vedere implementata.
+        
+        ### 📝 Convenzioni per il titolo
+        - **Feature**: `[FEAT] Nome della nuova funzionalità`
+        - **Enhancement**: `[ENH] Miglioramento di funzionalità esistente`
+        - **Frontend**: Aggiungi label `frontend` se riguarda l'interfaccia utente
+        - **Backend**: Aggiungi label `backend` se riguarda l'API/logica server
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🎯 Problema da Risolvere
+      description: Quale problema risolve questa feature?
+      placeholder: "Attualmente non è possibile... e questo causa..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Soluzione Proposta
+      description: Descrivi la funzionalità che vorresti
+      placeholder: "Vorrei che l'app permettesse di..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: user-story
+    attributes:
+      label: 👤 User Story
+      description: Scrivi una user story per questa feature
+      placeholder: |
+        Come [tipo di utente]
+        Voglio [azione/funzionalità]
+        Così che [beneficio/risultato]
+        
+        Esempio:
+        Come utente registrato
+        Voglio salvare i miei articoli preferiti
+        Così che posso leggerli in seguito senza doverli cercare di nuovo
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: 📊 Priorità
+      description: Quanto è importante questa feature?
+      options:
+        - "🔴 Alta - Feature cruciale per il business"
+        - "🟠 Media - Feature importante ma non bloccante"
+        - "🟡 Bassa - Nice to have, non urgente"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 📦 Componente
+      description: Quale parte dell'app coinvolge?
+      options:
+        - "🎨 Frontend - Interfaccia utente"
+        - "⚙️ Backend - API/Server"
+        - "🗄️ Database - Struttura dati"
+        - "🔐 Autenticazione/Autorizzazione"
+        - "📱 Mobile/Responsive"
+        - "🔗 Integrazione esterna"
+        - "🌐 Altro"
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: ✅ Criteri di Accettazione
+      description: Quando questa feature sarà considerata completata?
+      placeholder: |
+        - [ ] L'utente può...
+        - [ ] Il sistema mostra...
+        - [ ] Vengono validate...
+        - [ ] I dati vengono salvati...
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternative Considerate
+      description: Hai considerato altre soluzioni?
+      placeholder: "Altre opzioni potrebbero essere..."
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: 🎨 Mockup/Design
+      description: Aggiungi mockup, schizzi o riferimenti visivi
+      placeholder: "Trascina qui immagini, link a Figma, o descrizioni del design..."

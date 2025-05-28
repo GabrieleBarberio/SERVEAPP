@@ -1,0 +1,102 @@
+name: 🐛 Bug Report
+description: Segnala un bug o un problema
+title: "[BUG] "
+labels: ["bug", "needs-triage"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🐛 Bug Report
+        Grazie per aver segnalato questo bug! Per favore compila tutti i campi per aiutarci a risolverlo velocemente.
+        
+        ### 📝 Convenzioni per il titolo
+        - **Bug**: `[BUG] Breve descrizione del problema`
+        - **Frontend**: Aggiungi label `frontend` se riguarda l'interfaccia utente
+        - **Backend**: Aggiungi label `backend` se riguarda l'API/database
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📋 Descrizione del Bug
+      description: Descrivi chiaramente il problema riscontrato
+      placeholder: "Esempio: Il pulsante di login non risponde quando..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 🔄 Passi per Riprodurre
+      description: Elenca i passi per riprodurre il bug
+      placeholder: |
+        1. Vai alla pagina '...'
+        2. Clicca su '...'
+        3. Scorri fino a '...'
+        4. Vedi l'errore
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ Comportamento Atteso
+      description: Descrivi cosa dovrebbe succedere
+      placeholder: "Il sistema dovrebbe..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: ❌ Comportamento Attuale
+      description: Descrivi cosa succede invece
+      placeholder: "Invece il sistema..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: 🚨 Severità
+      description: Quanto è grave questo bug?
+      options:
+        - "🔴 Critico - Blocca completamente l'applicazione"
+        - "🟠 Alto - Funzionalità importante non funziona"
+        - "🟡 Medio - Piccolo problema ma workaround disponibile"
+        - "🟢 Basso - Problema cosmetico o miglioramento"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 📦 Componente
+      description: Quale parte dell'app è coinvolta?
+      options:
+        - "🎨 Frontend - Interfaccia utente"
+        - "⚙️ Backend - API/Server"
+        - "🗄️ Database - Dati"
+        - "🔐 Autenticazione"
+        - "📱 Mobile/Responsive"
+        - "🌐 Altro"
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🖥️ Ambiente
+      description: Informazioni sul tuo ambiente
+      placeholder: |
+        - OS: [es. Windows 11, macOS 13, Ubuntu 22.04]
+        - Browser: [es. Chrome 118, Firefox 119, Safari 17]
+        - Versione App: [es. v1.2.3]
+        - Dispositivo: [es. Desktop, Mobile, Tablet]
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: 📸 Screenshot/Logs
+      description: Aggiungi screenshot, logs o altri file utili
+      placeholder: "Trascina qui le immagini o incolla i log..."
