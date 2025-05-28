@@ -11,7 +11,9 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Git config
         run: |
@@ -22,27 +24,58 @@ jobs:
         id: issue
         run: |
           echo "ISSUE_NUMBER=${{ github.event.issue.number }}" >> $GITHUB_ENV
-          echo "ISSUE_TITLE=$(echo "${{ github.event.issue.title }}" | tr -d '\n' | tr ' ' '-')" >> $GITHUB_ENV
+          # Sanitize title for branch name
+          SANITIZED_TITLE=$(echo "${{ github.event.issue.title }}" | tr -d '\n' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9 ]//g' | tr ' ' '-' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
+          echo "ISSUE_TITLE=$SANITIZED_TITLE" >> $GITHUB_ENV
 
       - name: Determine subfolder
-        id: path
         run: |
           FOLDER="misc"
-          for label in ${{ toJson(github.event.issue.labels) }}; do
-            if echo $label | grep -qi "backend"; then FOLDER="serve-be"; fi
-            if echo $label | grep -qi "frontend"; then FOLDER="serve-fe"; fi
-          done
+          LABELS="${{ toJson(github.event.issue.labels.*.name) }}"
+          
+          # Parse labels and determine folder
+          if echo "$LABELS" | grep -qi "backend"; then
+            FOLDER="serve-be"
+          elif echo "$LABELS" | grep -qi "frontend"; then
+            FOLDER="serve-fe"
+          fi
+          
           echo "TARGET_FOLDER=$FOLDER" >> $GITHUB_ENV
+          echo "Selected folder: $FOLDER based on labels: $LABELS"
 
       - name: Create branch and file
         run: |
-          git fetch origin
-          git checkout -b issue-${ISSUE_NUMBER}-${ISSUE_TITLE} origin/develop
-          mkdir -p $TARGET_FOLDER/.issue-placeholders
-          echo "Auto-generated file for issue #${ISSUE_NUMBER}" > $TARGET_FOLDER/.issue-placeholders/issue-${ISSUE_NUMBER}.md
-          git add $TARGET_FOLDER/.issue-placeholders/issue-${ISSUE_NUMBER}.md
-          git commit -m "Initial commit for issue #${ISSUE_NUMBER}"
-          git push origin issue-${ISSUE_NUMBER}-${ISSUE_TITLE}
+          BRANCH_NAME="issue-${ISSUE_NUMBER}-${ISSUE_TITLE}"
+          
+          # Create and checkout new branch from develop
+          git fetch origin develop
+          git checkout -b "$BRANCH_NAME" origin/develop
+          
+          # Create directory and placeholder file
+          mkdir -p "$TARGET_FOLDER/.issue-placeholders"
+          cat > "$TARGET_FOLDER/.issue-placeholders/issue-${ISSUE_NUMBER}.md" << EOF
+          # Issue #${ISSUE_NUMBER}
+          
+          **Title:** ${{ github.event.issue.title }}
+          **Created:** $(date)
+          **Author:** ${{ github.event.issue.user.login }}
+          
+          ## Description
+          ${{ github.event.issue.body }}
+          
+          ## Link
+          ${{ github.event.issue.html_url }}
+          EOF
+          
+          # Commit and push
+          git add "$TARGET_FOLDER/.issue-placeholders/issue-${ISSUE_NUMBER}.md"
+          git commit -m "feat: initial commit for issue #${ISSUE_NUMBER}
+
+          - Auto-generated branch for issue #${ISSUE_NUMBER}
+          - Target folder: $TARGET_FOLDER
+          - Created placeholder file"
+          
+          git push origin "$BRANCH_NAME"
 
       - name: Create pull request
         uses: peter-evans/create-pull-request@v5
@@ -50,6 +83,22 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: issue-${{ env.ISSUE_NUMBER }}-${{ env.ISSUE_TITLE }}
           base: develop
-          title: "Fixes #${{ env.ISSUE_NUMBER }} - ${{ github.event.issue.title }}"
+          title: "🔧 Issue #${{ env.ISSUE_NUMBER }}: ${{ github.event.issue.title }}"
           body: |
-            Auto-generated PR for issue #${{ env.ISSUE_NUMBER }}
+            ## 📋 Auto-generated PR for Issue #${{ env.ISSUE_NUMBER }}
+            
+            **Issue:** ${{ github.event.issue.html_url }}
+            **Target Folder:** `${{ env.TARGET_FOLDER }}`
+            
+            ### 📝 Issue Details
+            ${{ github.event.issue.body }}
+            
+            ### ✅ What's included
+            - Created branch: `issue-${{ env.ISSUE_NUMBER }}-${{ env.ISSUE_TITLE }}`
+            - Added placeholder file in `${{ env.TARGET_FOLDER }}/.issue-placeholders/`
+            
+            ---
+            
+            Closes #${{ env.ISSUE_NUMBER }}
+          draft: false
+          delete-branch: false
