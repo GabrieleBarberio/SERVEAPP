@@ -1,0 +1,55 @@
+name: Create branch and PR from issue
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  create-branch-and-pr:
+    runs-on: ubuntu-latest
+    if: github.event.issue.pull_request == null
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Git config
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+
+      - name: Extract issue info
+        id: issue
+        run: |
+          echo "ISSUE_NUMBER=${{ github.event.issue.number }}" >> $GITHUB_ENV
+          echo "ISSUE_TITLE=$(echo "${{ github.event.issue.title }}" | tr -d '\n' | tr ' ' '-')" >> $GITHUB_ENV
+
+      - name: Determine subfolder
+        id: path
+        run: |
+          FOLDER="misc"
+          for label in ${{ toJson(github.event.issue.labels) }}; do
+            if echo $label | grep -qi "backend"; then FOLDER="serve-be"; fi
+            if echo $label | grep -qi "frontend"; then FOLDER="serve-fe"; fi
+          done
+          echo "TARGET_FOLDER=$FOLDER" >> $GITHUB_ENV
+
+      - name: Create branch and file
+        run: |
+          git fetch origin
+          git checkout -b issue-${ISSUE_NUMBER}-${ISSUE_TITLE} origin/main
+          mkdir -p $TARGET_FOLDER/.issue-placeholders
+          echo "Auto-generated file for issue #${ISSUE_NUMBER}" > $TARGET_FOLDER/.issue-placeholders/issue-${ISSUE_NUMBER}.md
+          git add $TARGET_FOLDER/.issue-placeholders/issue-${ISSUE_NUMBER}.md
+          git commit -m "Initial commit for issue #${ISSUE_NUMBER}"
+          git push origin issue-${ISSUE_NUMBER}-${ISSUE_TITLE}
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: issue-${{ env.ISSUE_NUMBER }}-${{ env.ISSUE_TITLE }}
+          base: main
+          title: "Fixes #${{ env.ISSUE_NUMBER }} - ${{ github.event.issue.title }}"
+          body: |
+            Auto-generated PR for issue #${{ env.ISSUE_NUMBER }}
