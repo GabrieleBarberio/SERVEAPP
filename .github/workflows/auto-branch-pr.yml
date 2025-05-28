@@ -8,32 +8,31 @@ jobs:
   create-branch-and-pr:
     runs-on: ubuntu-latest
     if: github.event.issue.pull_request == null
+    permissions:
+      contents: write
+      issues: read
+      pull-requests: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Setup Git config
-        run: |
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-
-      - name: Extract issue info
-        id: issue
+      - name: Extract issue info and determine folder
+        id: setup
         run: |
           echo "ISSUE_NUMBER=${{ github.event.issue.number }}" >> $GITHUB_ENV
+          
           # Sanitize title for branch name
           SANITIZED_TITLE=$(echo "${{ github.event.issue.title }}" | tr -d '\n' | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9 ]//g' | tr ' ' '-' | sed 's/--*/-/g' | sed 's/^-\|-$//g')
           echo "ISSUE_TITLE=$SANITIZED_TITLE" >> $GITHUB_ENV
-
-      - name: Determine subfolder
-        run: |
+          
+          # Determine folder based on labels
           FOLDER="misc"
           LABELS="${{ toJson(github.event.issue.labels.*.name) }}"
           
-          # Parse labels and determine folder
           if echo "$LABELS" | grep -qi "backend"; then
             FOLDER="serve-be"
           elif echo "$LABELS" | grep -qi "frontend"; then
@@ -41,20 +40,13 @@ jobs:
           fi
           
           echo "TARGET_FOLDER=$FOLDER" >> $GITHUB_ENV
-          echo "Selected folder: $FOLDER based on labels: $LABELS"
+          echo "Selected folder: $FOLDER"
 
-      - name: Create branch and file
+      - name: Create placeholder file
         run: |
-          BRANCH_NAME="issue-${ISSUE_NUMBER}-${ISSUE_TITLE}"
-          
-          # Create and checkout new branch from develop
-          git fetch origin develop
-          git checkout -b "$BRANCH_NAME" origin/develop
-          
-          # Create directory and placeholder file
           mkdir -p "$TARGET_FOLDER/.issue-placeholders"
-          cat > "$TARGET_FOLDER/.issue-placeholders/issue-${ISSUE_NUMBER}.md" << EOF
-          # Issue #${ISSUE_NUMBER}
+          cat > "$TARGET_FOLDER/.issue-placeholders/issue-${{ env.ISSUE_NUMBER }}.md" << 'EOF'
+          # Issue #${{ env.ISSUE_NUMBER }}
           
           **Title:** ${{ github.event.issue.title }}
           **Created:** $(date)
@@ -66,21 +58,17 @@ jobs:
           ## Link
           ${{ github.event.issue.html_url }}
           EOF
-          
-          # Commit and push
-          git add "$TARGET_FOLDER/.issue-placeholders/issue-${ISSUE_NUMBER}.md"
-          git commit -m "feat: initial commit for issue #${ISSUE_NUMBER}
 
-          - Auto-generated branch for issue #${ISSUE_NUMBER}
-          - Target folder: $TARGET_FOLDER
-          - Created placeholder file"
-          
-          git push origin "$BRANCH_NAME"
-
-      - name: Create pull request
+      - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            feat: initial commit for issue #${{ env.ISSUE_NUMBER }}
+            
+            - Auto-generated branch for issue #${{ env.ISSUE_NUMBER }}
+            - Target folder: ${{ env.TARGET_FOLDER }}
+            - Created placeholder file
           branch: issue-${{ env.ISSUE_NUMBER }}-${{ env.ISSUE_TITLE }}
           base: develop
           title: "🔧 Issue #${{ env.ISSUE_NUMBER }}: ${{ github.event.issue.title }}"
@@ -100,5 +88,4 @@ jobs:
             ---
             
             Closes #${{ env.ISSUE_NUMBER }}
-          draft: false
           delete-branch: false
