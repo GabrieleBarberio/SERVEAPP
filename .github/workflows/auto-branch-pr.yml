@@ -37,7 +37,7 @@ jobs:
       - name: Create branch and file
         run: |
           git fetch origin
-          git checkout -b issue-${ISSUE_NUMBER}-${ISSUE_TITLE} origin/main
+          git checkout -b issue-${ISSUE_NUMBER}-${ISSUE_TITLE} origin/develop
           mkdir -p $TARGET_FOLDER/.issue-placeholders
           echo "Auto-generated file for issue #${ISSUE_NUMBER}" > $TARGET_FOLDER/.issue-placeholders/issue-${ISSUE_NUMBER}.md
           git add $TARGET_FOLDER/.issue-placeholders/issue-${ISSUE_NUMBER}.md
@@ -49,7 +49,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: issue-${{ env.ISSUE_NUMBER }}-${{ env.ISSUE_TITLE }}
-          base: main
+          base: develop
           title: "Fixes #${{ env.ISSUE_NUMBER }} - ${{ github.event.issue.title }}"
           body: |
             Auto-generated PR for issue #${{ env.ISSUE_NUMBER }}
