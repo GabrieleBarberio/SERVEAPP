@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from 'src/user-repository/entity/user.entity';
-import { CustomException } from 'src/common/exception/custom-exception';
+import { ServeException } from 'src/common/exception/serve-exception';
 import { CustomExceptionEnum } from 'src/common/enums/custom-exception';
 import { InjectRepository } from '@nestjs/typeorm';
+import { propagateException } from 'src/common/exception/exception-utils';
 
 @Injectable()
 export class UserRepositoryService {
@@ -16,12 +17,11 @@ export class UserRepositoryService {
       const user: User | null = await this.userRepository.findOneBy({ id });
 
       if (!user) {
-        throw new CustomException(CustomExceptionEnum.USER_NOT_FOUND);
+        throw new ServeException(CustomExceptionEnum.USER_NOT_FOUND);
       }
       return user;
     } catch (error) {
-      console.error(error);
-      throw new CustomException(CustomExceptionEnum.GENERIC_ERROR);
+      propagateException(error);
     }
   }
 
@@ -29,12 +29,11 @@ export class UserRepositoryService {
     try {
       const user: User | null = await this.userRepository.findOneBy({ email });
       if (!user) {
-        throw new CustomException(CustomExceptionEnum.USER_NOT_FOUND);
+        throw new ServeException(CustomExceptionEnum.USER_NOT_FOUND);
       }
       return user;
     } catch (error) {
-      console.error(error);
-      throw new CustomException(CustomExceptionEnum.GENERIC_ERROR);
+      propagateException(error);
     }
   }
   async getByUsername(username: string): Promise<User> {
@@ -44,37 +43,33 @@ export class UserRepositoryService {
       });
 
       if (!user) {
-        throw new CustomException(CustomExceptionEnum.USER_NOT_FOUND);
+        throw new ServeException(CustomExceptionEnum.USER_NOT_FOUND);
       }
 
       return user;
     } catch (error) {
-      console.error(error);
-      throw new CustomException(CustomExceptionEnum.GENERIC_ERROR);
+      propagateException(error);
     }
   }
 
-  async getByUsernameEmail(username: string, email: string): Promise<User> {
+  async getByUsernameEmail(
+    username: string,
+    email: string,
+  ): Promise<User | null> {
     try {
       const user: User | null = await this.userRepository.findOneBy({
         username,
         email,
       });
-
-      if (!user) {
-        throw new CustomException(CustomExceptionEnum.USER_NOT_FOUND);
-      }
-
       return user;
     } catch (error) {
-      console.error(error);
-      throw new CustomException(CustomExceptionEnum.GENERIC_ERROR);
+      propagateException(error);
     }
   }
 
   async create(user: User): Promise<User> {
     if (!user || !user.email || !user.username) {
-      throw new CustomException(CustomExceptionEnum.GENERIC_ERROR);
+      throw new ServeException(CustomExceptionEnum.GENERIC_ERROR);
     }
     try {
       const data = await this.userRepository.findOne({
@@ -85,13 +80,12 @@ export class UserRepositoryService {
         ],
       });
       if (data) {
-        throw new CustomException(CustomExceptionEnum.USER_ALREADY_EXISTS);
+        throw new ServeException(CustomExceptionEnum.USER_ALREADY_EXISTS);
       }
       user = this.userRepository.create(user);
       return await this.userRepository.save(user);
     } catch (error) {
-      console.error(error);
-      throw new CustomException(CustomExceptionEnum.GENERIC_ERROR);
+      propagateException(error);
     }
   }
 }

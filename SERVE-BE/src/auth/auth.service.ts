@@ -4,14 +4,14 @@ import { TokenUtils } from './utils/token-utils';
 import { User } from 'src/user-repository/entity/user.entity';
 import { UserLoginDto } from 'src/auth/dtos/user.login.dto';
 import * as bcrypt from 'bcrypt';
-import { Repository } from 'typeorm';
 import { UserRegisterDto } from 'src/auth/dtos/user.register.dto';
 import { UserDto } from 'src/auth/dtos/user.dto';
 import { RoleConstants } from 'src/roles/constants/RoleConstants';
 import { UserMapper } from 'src/auth/mapper/UserMapper';
-import { CustomException } from 'src/common/exception/custom-exception';
+import { ServeException } from 'src/common/exception/serve-exception';
 import { CustomExceptionEnum } from 'src/common/enums/custom-exception';
 import { UserRepositoryService } from 'src/user-repository/user-repository.service';
+import { propagateException } from 'src/common/exception/exception-utils';
 
 @Injectable()
 export class AuthService {
@@ -33,7 +33,7 @@ export class AuthService {
       );
 
       if (!user) {
-        throw new CustomException(CustomExceptionEnum.USER_NOT_FOUND);
+        throw new ServeException(CustomExceptionEnum.USER_NOT_FOUND);
       }
 
       const passwordMatch: boolean = await bcrypt.compare(
@@ -42,13 +42,12 @@ export class AuthService {
       );
 
       if (!passwordMatch) {
-        throw new CustomException(CustomExceptionEnum.INVALID_CREDENTIALS);
+        throw new ServeException(CustomExceptionEnum.INVALID_CREDENTIALS);
       }
 
       return this.generateJwt(user);
     } catch (error) {
-      console.error(error);
-      throw new CustomException(CustomExceptionEnum.GENERIC_ERROR);
+      propagateException(error);
     }
   }
 
@@ -61,7 +60,7 @@ export class AuthService {
         );
 
       if (existingUser) {
-        throw new CustomException(CustomExceptionEnum.USER_ALREADY_EXISTS);
+        throw new ServeException(CustomExceptionEnum.USER_ALREADY_EXISTS);
       }
 
       const hashedPassword: string = await bcrypt.hash(
@@ -76,19 +75,17 @@ export class AuthService {
       const savedUser: User = await this.userRepository.create(userToSave);
       return this.userMapper.mapToDto(savedUser);
     } catch (error) {
-      if (error instanceof CustomException) throw error;
-      console.error(error);
-      throw new CustomException(CustomExceptionEnum.GENERIC_ERROR, [error]);
+      propagateException(error);
     }
   }
 
   validateToken(authHeader?: string) {
     const token = TokenUtils.extractToken(authHeader);
-    if (!token) throw new CustomException(CustomExceptionEnum.TOKEN_MISSING);
+    if (!token) throw new ServeException(CustomExceptionEnum.TOKEN_MISSING);
     try {
       return this.tokenUtils.verifyToken(token);
     } catch {
-      throw new CustomException(CustomExceptionEnum.INVALID_TOKEN);
+      throw new ServeException(CustomExceptionEnum.INVALID_TOKEN);
     }
   }
 

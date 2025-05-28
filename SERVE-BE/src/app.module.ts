@@ -7,16 +7,15 @@
  */
 
 import { Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StockModule } from 'src/stock/stock.module';
-
 import { AuthModule } from './auth/auth.module';
-import { RolesModule } from './roles/roles.module';
 import { UserRepositoryModule } from './user-repository/user-repository.module';
-import { UserRepositoryService } from './user-repository/user-repository.service';
+import { ServeExceptionFilter } from './common/exception/serve-exception-filter';
 
 @Module({
   imports: [
@@ -26,20 +25,26 @@ import { UserRepositoryService } from './user-repository/user-repository.service
       imports: [ConfigModule, StockModule, AuthModule],
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
-        host: config.get('POSTGRES_HOST'),
-        port: config.get<number>('POSTGRES_PORT'),
-        username: config.get('POSTGRES_USER'),
-        password: config.get('POSTGRES_PASSWORD'),
-        database: config.get('POSTGRES_DB'),
+        host: config.get('DB_HOST'),
+        port: config.get<number>('DB_PORT'),
+        username: config.get('DB_USER'),
+        password: config.get('DB_PASSWORD'),
+        database: config.get('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: false,
       }),
-
+      inject: [ConfigService],
     }),
     AuthModule,
     UserRepositoryModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: ServeExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}
