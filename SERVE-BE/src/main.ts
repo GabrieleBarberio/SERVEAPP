@@ -23,6 +23,11 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new ServeExceptionFilter());
+  app.enableCors({
+    origin: process.env.CORS_ORIGIN as string,
+    credentials: true,
+  });
+
   await app.listen(process.env.PORT ?? 3000);
 }
 
