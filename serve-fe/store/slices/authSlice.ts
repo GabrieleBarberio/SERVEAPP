@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { apiClient } from '../../utils/apiClient';
-import {User} from '../../types/user';
+import { apiClient } from '@/utils/apiClients';
+import { User } from '@/types/User';
 
 export const initialUserState: User = {
-  email: null,
-  username: null,
-  token: null,
+  email: "",
+  username: "",
+  token: "",
 };
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
@@ -14,7 +14,8 @@ export const loginUser = createAsyncThunk(
       const response = await apiClient.post('/auth/login', credentials);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Login failed');
+      const err = error as { response?: { data?: { message?: string } } };
+      return rejectWithValue(err.response?.data?.message || 'Login failed');
     }
   }
 );
@@ -22,13 +23,14 @@ export const fetchUserProfile = createAsyncThunk(
   'auth/fetchUserProfile',
   async (_, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
+      const token = (getState() as { auth: typeof initialUserState & { token: string } }).auth.token;
       const response = await apiClient.get('/user/profile', {
         headers: { Authorization: `Bearer ${token}` }
       });
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch profile');
+      const err = error as { response?: { data?: { message?: string } } };
+      return rejectWithValue(err.response?.data?.message || 'Failed to fetch profile');
     }
   }
 );
@@ -36,7 +38,7 @@ export const logoutUser = createAsyncThunk(
   'auth/logoutUser',
   async (_, { rejectWithValue, getState }) => {
     try {
-      const token = getState().auth.token;
+      const token = (getState() as { auth: typeof initialUserState & { token: string } }).auth.token;
       await apiClient.post('/auth/logout', {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -53,7 +55,7 @@ const authSlice = createSlice({
     user: initialUserState,
     isAuthenticated: false,
     isLoading: false,
-    error: null,
+    error: null as string | null,
   },
   reducers: {
     clearError: (state) => {
@@ -84,7 +86,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload;
+        state.error = action.payload as string | null;
         state.isAuthenticated = false;
       })
       .addCase(fetchUserProfile.pending, (state) => {
@@ -97,7 +99,7 @@ const authSlice = createSlice({
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload;
+        state.error = action.payload as string | null;
       })
       .addCase(logoutUser.pending, (state) => {
         state.isLoading = true;
@@ -120,11 +122,11 @@ const authSlice = createSlice({
 
 export const { clearError, clearAuth, updateUserProfile } = authSlice.actions;
 
-export const selectAuth = (state) => state.auth;
-export const selectUser = (state) => state.auth.user;
-export const selectToken = (state) => state.auth.token;
-export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
-export const selectAuthLoading = (state) => state.auth.isLoading;
-export const selectAuthError = (state) => state.auth.error;
+export const selectAuth = (state: { auth: any; }) => state.auth;
+export const selectUser = (state: { auth: any; }) => state.auth.user;
+export const selectToken = (state: { auth: any; }) => state.auth.token;
+export const selectIsAuthenticated = (state: { auth: any; }) => state.auth.isAuthenticated;
+export const selectAuthLoading = (state: { auth: any; }) => state.auth.isLoading;
+export const selectAuthError = (state: { auth: any; }) => state.auth.error;
 
 export default authSlice.reducer;

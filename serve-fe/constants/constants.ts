@@ -1,9 +1,7 @@
 
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: __DEV__
-    ? 'http://localhost:3000/api'
-    : 'https://your-production-api.com/api',
+  BASE_URL:'http://localhost:3000/',
   TIMEOUT: 10000,
   RETRY_ATTEMPTS: 3,
 };

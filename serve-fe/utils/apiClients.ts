@@ -4,7 +4,7 @@ import { clearAuth } from '../store/slices/authSlice';
 import { URI } from '../config/URI';
 
 
-const API_BASE_URL = URI.API_BASE_URL;
+const API_BASE_URL = URI.BASE_URL;
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -76,7 +76,7 @@ apiClient.interceptors.response.use(
 // Utility functions per chiamate API comuni
 export const apiUtils = {
   // GET request
-  get: async (url, config = {}) => {
+  get: async (url: string, config = {}) => {
     try {
       const response = await apiClient.get(url, config);
       return response.data;
@@ -86,7 +86,7 @@ export const apiUtils = {
   },
 
   // POST request
-  post: async (url, data = {}, config = {}) => {
+  post: async (url: string, data = {}, config = {}) => {
     try {
       const response = await apiClient.post(url, data, config);
       return response.data;
@@ -96,7 +96,7 @@ export const apiUtils = {
   },
 
   // PUT request
-  put: async (url, data = {}, config = {}) => {
+  put: async (url: string, data = {}, config = {}) => {
     try {
       const response = await apiClient.put(url, data, config);
       return response.data;
@@ -106,7 +106,7 @@ export const apiUtils = {
   },
 
   // PATCH request
-  patch: async (url, data = {}, config = {}) => {
+  patch: async (url: string, data = {}, config = {}) => {
     try {
       const response = await apiClient.patch(url, data, config);
       return response.data;
@@ -116,7 +116,7 @@ export const apiUtils = {
   },
 
   // DELETE request
-  delete: async (url, config = {}) => {
+  delete: async (url: string, config = {}) => {
     try {
       const response = await apiClient.delete(url, config);
       return response.data;
@@ -126,17 +126,20 @@ export const apiUtils = {
   },
 
   // Upload file
-  uploadFile: async (url, file, onUploadProgress = null) => {
+  uploadFile: async (url: string, file: string | Blob, onUploadProgress?: (progressEvent: any) => void) => {
     try {
       const formData = new FormData();
       formData.append('file', file);
 
-      const config = {
+      const config: any = {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        onUploadProgress,
       };
+
+      if (onUploadProgress) {
+        config.onUploadProgress = onUploadProgress;
+      }
 
       const response = await apiClient.post(url, formData, config);
       return response.data;

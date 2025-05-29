@@ -1,32 +1,32 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Text, StyleSheet, Alert } from 'react-native';
-
+import { apiUtils } from '../utils/apiClients';
+import { ENDPOINTS } from '@/constants/constants'; 
 const RegisterScreen = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleRegister = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('http://<INDIRIZZO_BACKEND>:3000/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, email, password }),
-      });
-      if (response.ok) {
-        Alert.alert('Registrazione riuscita', 'Utente registrato con successo!');
-      } else {
-        const data = await response.json();
-        Alert.alert('Errore', data.message || 'Registrazione fallita');
-      }
-    } catch (error) {
-      Alert.alert('Errore', 'Impossibile connettersi al server');
-    } finally {
-      setLoading(false);
-    }
-  };
+ const handleRegister = async () => {
+  setLoading(true);
+  
+  try {
+    await apiUtils.post(ENDPOINTS.AUTH.REGISTER, {
+      username,
+      email,
+      password,
+      role: 'HIGH',} 
+    );
+    Alert.alert('Registrazione completata', 'Ora puoi accedere con le tue credenziali.');
+  } catch (error) {
+    console.error('Errore durante la registrazione:', error);
+    Alert.alert('Errore', 'Si è verificato un errore durante la registrazione. Riprova più tardi.');
+  } finally {
+    console.log(username, email, password);
+    setLoading(false);
+  }
+};
 
   return (
     <View style={styles.container}>
