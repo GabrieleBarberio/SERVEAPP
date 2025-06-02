@@ -10,5 +10,6 @@
             "username": "serveuser",
             "password": "servepass"
         }
-    ]
+    ],
+    "compile-hero.disable-compile-files-on-did-save-code": false
 }
