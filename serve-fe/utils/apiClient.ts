@@ -1,5 +1,5 @@
-import { ApiConstant } from '@/constants/Api';
-import { ApiClientConfig, ApiError } from '@/types/Api';
+
+import { ApiError } from '@/types/Api';
 import axios, { AxiosRequestConfig, AxiosError } from 'axios';
 
 const api = axios.create({

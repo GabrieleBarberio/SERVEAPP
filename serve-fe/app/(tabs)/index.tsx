@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { apiPost } from '@/utils/apiClient';
 import { 
   View, 
   Text, 
@@ -15,13 +16,26 @@ import {
   incrementByAmount 
 } from '../../store/slices/counterSlice';
 
-
-
-
 export default function HomeScreen() {
+  const [token, setToken] = useState<string | null>(null);
+
   const dispatch = useAppDispatch();
   const counter = useAppSelector(state => state.counter.value);
 
+    const data = {
+    email: "utente@exampl.com",
+    password: "password123"
+  };
+
+    const login = async () => {
+    try {
+      const response: any = await apiPost('/auth/login', data);
+      setToken(response.access_token); // o response.data.token, dipende dalla tua API
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+  };
+login();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -60,6 +74,7 @@ export default function HomeScreen() {
           >
             <Text style={styles.buttonText}>Reset</Text>
           </TouchableOpacity>
+          <Text style={styles.title}>{token}</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
