@@ -1,16 +1,7 @@
+import { UserState, User } from '@/types/User';
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 
-interface User{
-    id: number;
-    username: string,
-    email: string
-}
-interface UserState {
-    profile: User | null;
-    isAuthenticated: boolean;
-    loading: boolean;
-    error: string | null;
-}
+
 
 export const fetchUser =  createAsyncThunk<User, number>(
     'user/fetchUser',
@@ -28,6 +19,7 @@ export const fetchUser =  createAsyncThunk<User, number>(
 );
 const initialState: UserState = {
     profile: null,
+    token: null,
     isAuthenticated: false,
     loading: false,
     error: null
@@ -39,11 +31,13 @@ export const userSlice = createSlice({
         login: (state: UserState, action: PayloadAction<User>) => {
             state.profile = action.payload;
             state.isAuthenticated = true;   
+            state.token = action.payload.token;
             state.error = null;
         },
         logout: (state: UserState) => {
             state.profile = null;
             state.isAuthenticated = false;
+            state.token = null;
             state.error = null;
         },
         clearError: (state: UserState) => {
@@ -62,9 +56,9 @@ export const userSlice = createSlice({
             state.isAuthenticated = true;
             state.loading = false;
         })
-        .addCase(fetchUser.rejected, (state: UserState, action: PayloadAction<User>) => {
+        .addCase(fetchUser.rejected, (state: UserState, action: any) => {
             state.loading = false;
-            state.error = action.error.message || 'Failed to fetch user';
+            state.error = action.error?.message || 'Failed to fetch user';
             state.isAuthenticated = false;
         });
 },
