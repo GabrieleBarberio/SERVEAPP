@@ -43,6 +43,7 @@ api.interceptors.response.use(
 
 export async function apiGet<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
   const res = await api.get<T>(url, config);
+  console.log('GET', url, res);
   return res.data;
 }
 export async function apiPost<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> {

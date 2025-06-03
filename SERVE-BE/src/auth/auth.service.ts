@@ -12,6 +12,7 @@ import { ServeException } from 'src/common/exception/serve-exception';
 import { CustomExceptionEnum } from 'src/common/enums/custom-exception';
 import { UserRepositoryService } from 'src/user-repository/user-repository.service';
 import { propagateException } from 'src/common/exception/exception-utils';
+import { UserAuthDto } from './dtos/user.auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -27,6 +28,7 @@ export class AuthService {
   }
 
   async login(userLoginDto: UserLoginDto) {
+    const res: UserAuthDto = new UserAuthDto();
     try {
       const user: User | null = await this.userRepository.getByEmail(
         userLoginDto.email,
@@ -44,8 +46,10 @@ export class AuthService {
       if (!passwordMatch) {
         throw new ServeException(CustomExceptionEnum.INVALID_CREDENTIALS);
       }
+      res.setUser(this.userMapper.mapToDto(user));
+      res.setServeToken(this.generateJwt(user).serveToken);
 
-      return this.generateJwt(user);
+      return res;
     } catch (error) {
       propagateException(error);
     }
@@ -89,7 +93,7 @@ export class AuthService {
     }
   }
 
-  generateJwt(user: User): { access_token: string } {
+  generateJwt(user: User): { serveToken: string } {
     const payload = {
       sub: user.id,
       email: user.email,
@@ -97,7 +101,7 @@ export class AuthService {
     };
 
     return {
-      access_token: this.jwtService.sign(payload),
+      serveToken: this.jwtService.sign(payload),
     };
   }
 }

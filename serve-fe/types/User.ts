@@ -1,13 +1,12 @@
 export interface User{
     id: number;
     username: string,
+    isAuthenticated: boolean
     token: string | null
     email: string
 }
 export interface UserState {
     profile: User | null;
-    token: string | null;
-    isAuthenticated: boolean;
-    loading: boolean;
+    isLoading: boolean;
     error: string | null;
 }

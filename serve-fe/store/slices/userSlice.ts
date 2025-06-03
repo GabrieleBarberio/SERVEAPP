@@ -3,65 +3,33 @@ import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 
 
 
-export const fetchUser =  createAsyncThunk<User, number>(
-    'user/fetchUser',
-    async (userId: number) => {
-        try {
-            const response = await fetch(`/api/users/${userId}`);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return await response.json();
-        } catch (error: any) {
-            return console.error(error.message);
-        }
-    }
-);
+
 const initialState: UserState = {
     profile: null,
-    token: null,
-    isAuthenticated: false,
-    loading: false,
+    isLoading: false,
     error: null
 };
 export const userSlice = createSlice({
     name: 'user',
     initialState,
     reducers: {
-        login: (state: UserState, action: PayloadAction<User>) => {
-            state.profile = action.payload;
-            state.isAuthenticated = true;   
-            state.token = action.payload.token;
-            state.error = null;
-        },
+        login: (state: UserState, action: PayloadAction<{ user: User, serveToken: string }>) => {
+        state.profile = {
+        ...action.payload.user,
+        isAuthenticated: true,
+        token: action.payload.serveToken,
+    };
+    state.error = null;
+},
         logout: (state: UserState) => {
             state.profile = null;
-            state.isAuthenticated = false;
-            state.token = null;
             state.error = null;
         },
         clearError: (state: UserState) => {
             state.error = null;
         }
             
-    },
-    extraReducers: (builder: any) => {
-        builder
-        .addCase(fetchUser.pending, (state: UserState) => {
-            state.loading = true;
-            state.error = null;
-        })
-        .addCase(fetchUser.fulfilled, (state: UserState, action: PayloadAction<User>) => {
-            state.profile = action.payload;
-            state.isAuthenticated = true;
-            state.loading = false;
-        })
-        .addCase(fetchUser.rejected, (state: UserState, action: any) => {
-            state.loading = false;
-            state.error = action.error?.message || 'Failed to fetch user';
-            state.isAuthenticated = false;
-        });
-},
+    }
 });
 export const { login, logout, clearError } = userSlice.actions;
 export default userSlice.reducer;
