@@ -1,4 +1,3 @@
-import React from 'react';
 import { 
   View, 
   Text, 
@@ -16,17 +15,38 @@ import {
 } from '../../store/slices/counterSlice';
 
 
-
-
 export default function HomeScreen() {
+
   const dispatch = useAppDispatch();
   const counter = useAppSelector(state => state.counter.value);
+  const profile = useAppSelector(state => state.user.profile);
 
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <Text style={styles.title}>Redux + Expo Router App</Text>
+        {/* User Section */}
+        <View style={styles.section}>
+          <View style={styles.userContainer}>
+            {profile ? (
+              <>
+                <Text style={styles.userInfo}>Welcome, {profile.username}!</Text>
+                <Text style={styles.userEmail}>{profile.email}</Text>
+                <Text style={styles.username}>Username: {profile.username}</Text>
+              </>
+            ) : (
+              <Text style={styles.errorText}>User not logged in</Text>
+            )}
+          </View>
+          
+          <TouchableOpacity 
+            style={[styles.button, styles.logoutButton]} 
+            onPress={() => dispatch({ type: 'user/logout' })}
+          >
+            <Text style={styles.buttonText}>Logout</Text>
+          </TouchableOpacity>
+          </View>
         
         {/* Counter Section */}
         <View style={styles.section}>
