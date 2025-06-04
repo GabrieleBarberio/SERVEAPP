@@ -3,7 +3,7 @@ import { ApiError } from '@/types/Api';
 import axios, { AxiosRequestConfig, AxiosError } from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000', // Cambia con il tuo backend
+  baseURL: 'http://192.168.1.52:3000', // Cambia con il tuo backend
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 });

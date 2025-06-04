@@ -1,4 +1,7 @@
 {
+    "files.associations": {
+    "**/*.css": "tailwindcss",
+  },
     "sqltools.connections": [
         {
             "previewLimit": 50,
@@ -11,6 +14,7 @@
             "password": "servepass"
         }
     ],
-    "compile-hero.disable-compile-files-on-did-save-code": true,
+    "css.validate": false,
+    "compile-hero.disable-compile-files-on-did-save-code": false,
     "compile-hero.config": ""
 }
